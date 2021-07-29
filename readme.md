@@ -53,6 +53,30 @@ If you forget to start your local server, your component will render with:
 Error in <name>.tsx Failed to Fetch
 ```
 
+## Live Reload
+
+To refresh the components on Framer's canvas when you make changes locally, you can use the `useRealtimeComponent` hook. Whenever a build is completed, it will fetch the latest version of that component and automatically re-render on the canvas:
+
+```.tsx
+import * as React from "react"
+import { addPropertyControls, ControlType, PropertyControls } from "framer"
+import { Button as ImportedComponent } from "http://127.0.0.1:8000/Button.js"
+import { useRealtimeComponent } from "http://127.0.0.1:8000/utils/live-reload/useRealtimeComponent.js"
+
+const InnerButton = (props) => {
+    const Component = useRealtimeComponent(ImportedComponent, "Button")
+
+    return <Component {...props} />
+}
+
+export const Button: React.ComponentType = InnerButton
+
+addPropertyControls(InnerButton, ImportedComponent.propertyControls || {})
+
+```
+
+**There is one gotcha**: if you are iterating on property controls, they will not update immediately in Framer's UI. You will need to save the code file in the Framer project again or refresh the project to see the latest changes.
+
 ## Deployment
 
 Once you are ready to deploy your code, it should be uploaded to an https endpoint with a versioned url. We have set up a [Workflow](https://github.com/framer/example-framer-esm-setup/actions) to build the code and deploy to [GitHub Pages](https://github.com/framer/example-framer-esm-setup/tree/pages). To ship a next version you simply type:
@@ -121,5 +145,3 @@ import { Button } from "./Button.js"
 **Private code**: you should keep your source private, but not your built code. Make sure to enable `minify` in the `esmbuild.js` script to minify your code.
 
 **Assets**: you can host your assets (images, movies) anywhere you like and just use the full urls to use them in your components.
-
-**Auto refresh**: you currently have to manually reload your components to see changes in your development code. It should be doable to make an `esbuild` plugin that inserts a snippet to auto reload after changes. Contributions are welcome.
